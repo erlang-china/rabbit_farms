@@ -47,6 +47,16 @@ config the `rabbit_famrs.app`
                                       exchange             = <<"tracking.logs">>, 
                                       rabbit_carrot_bodies = [Body1,Body2]}.
     
+      #rabbit_carrots{
+                        farm_name = tracking,exchange = <<"tracking.logs">>,
+                        rabbit_carrot_bodies = 
+                            [#rabbit_carrot_body{
+                                 routing_key = <<"routing_key">>,
+                                 message = <<"message1">>},
+                             #rabbit_carrot_body{
+                                 routing_key = <<"routing_key">>,
+                                 message = <<"message2">>}],
+                        content_type = undefined}
 
     4>rabbit_farms:publish(cast, RabbitCarrots). %%asynchronous
     5>rabbit_farms:publish(call, RabbitCarrots). %%synchronization
