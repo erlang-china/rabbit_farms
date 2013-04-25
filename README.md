@@ -2,3 +2,51 @@ rabbit_farms
 ============
 
 Rabbit farms is a standalone service for publish RabbitMQ messages
+
+###Usage:
+config the `rabbit_famrs.app`
+
+    {env, [{rabbit_farms,[tracking]},
+    	     {farm_tracking,[{username, <<"guest">>},
+              						 {password, <<"V2pOV2JHTXpVVDA9">>}, %% three_times_base64("guest")
+              						 {virtual_host, <<"/">>},
+              						 {host, "localhost"},
+              						 {port, 5672},
+                           {feeders,[
+                                      [{channel_count,1},
+                                       {exchange, <<"tracking.logs">>},
+                                       {type, <<"topic">>}]
+                                    ]}
+                           ]}
+    ]}
+
+####publish 
+-------
+    1>RabbitCarrot = #rabbit_carrot{farm_name = tracking, exchange = <<"tracking.logs">>, 
+                     routing_key = <<"routing_key">>, 
+                     message = <<"">>}.
+      #rabbit_carrot{farm_name = tracking,
+               exchange = <<"tracking.logs">>,
+               routing_key = <<"routing_key">>,message = <<>>,
+               content_type = undefined}
+
+    2>rabbit_farms:publish(cast, RabbitCarrot). %%asynchronous
+    3>rabbit_farms:publish(call, RabbitCarrot). %%synchronization
+
+####batch publish
+-------
+    1>Body1 = #rabbit_carrot_body{routing_key = <<"routing_key">>, message = <<"message1">>}.
+      #rabbit_carrot_body{routing_key = <<"routing_key1">>,
+                    message = <<"message1">>}
+                    
+    2>Body2 = #rabbit_carrot_body{routing_key = <<"routing_key">>, message = <<"message2">>}.
+      #rabbit_carrot_body{routing_key = <<"routing_key2">>,
+                    message = <<"message2">>}
+                    
+    3>RabbitCarrots = #rabbit_carrots{farm_name            = tracking,
+                                      exchange             = <<"tracking.logs">>, 
+                                      rabbit_carrot_bodies = [Body1,Body2]}.
+    
+
+    4>rabbit_farms:publish(cast, RabbitCarrots). %%asynchronous
+    5>rabbit_farms:publish(call, RabbitCarrots). %%synchronization
