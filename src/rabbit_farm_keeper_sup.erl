@@ -14,7 +14,7 @@
 %% limitations under the License.
 %% -------------------------------------------------------------------
 
--module(rabbit_farm_sup).
+-module(rabbit_farm_keeper_sup).
 
 -behaviour(supervisor).
 
