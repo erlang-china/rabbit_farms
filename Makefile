@@ -17,13 +17,13 @@ clean:
 
 console:
 	@erl -sname rabbit_farms -pa ebin \
-	../libs/amqp_client ../libs/rabbit_common ../libs/amqp_client/ebin ../libs/rabbit_common/ebin \
+	./deps/amqp_client ./deps/rabbit_common ./deps/amqp_client/ebin ./deps/rabbit_common/ebin \
 	 -boot start_sasl -s rabbit_farms
 
 
 win_console:
-	@werl -sname rabbit_farms -pa ebin \
-	../libs/amqp_client ../libs/rabbit_common ../libs/amqp_client/ebin ../libs/rabbit_common/ebin \
+	@erl -sname rabbit_farms -pa ebin \
+	./deps/amqp_client ./deps/rabbit_common ./deps/amqp_client/ebin ./deps/rabbit_common/ebin \
 	 -boot start_sasl -s rabbit_farms
 doc:
 	$(REBAR) doc
