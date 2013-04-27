@@ -1,0 +1,25 @@
+{application, rabbit_farms,
+ [
+  {description, "A standalone service for publish RabbitMQ messages that cast by another erlang apps"},
+  {vsn, "1.0.0"},
+  {registered, []},
+  {applications, [
+                  kernel,
+                  stdlib
+                 ]},
+  {mod, { rabbit_farms_app, []}},
+  {env, [{rabbit_farms,[default]},
+  		   {farm_default,[ {username, <<"guest">>},
+            						 {password, <<"V2pOV2JHTXpVVDA9">>},
+            						 {virtual_host, <<"/">>},
+            						 {host, "localhost"},
+            						 {port, 5672},
+                         {feeders,[
+                                    [{channel_count,1},
+                                     {exchange, <<"tracking.logs">>},
+                                     {type, <<"topic">>}]
+                                  ]}
+                         ]}
+  		  ]}
+ ]
+}.
