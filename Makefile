@@ -1,4 +1,4 @@
-REBAR=../compile_tools/rebar/rebar
+REBAR=rebar
 
 .PHONY: all erl test clean doc 
 
