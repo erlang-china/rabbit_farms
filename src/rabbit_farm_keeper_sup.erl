@@ -42,5 +42,5 @@ start_link(RabbitFarmModel) ->
 
 init([RabbitFarmModel]) ->
 	#rabbit_farm{farm_name = FarmName} = RabbitFarmModel,
-    {ok, { {one_for_one, 5, 10}, [?CHILD(FarmName, rabbit_farm, worker, [RabbitFarmModel])]} }.
+    {ok, { {one_for_one, 5, 10}, [?CHILD(FarmName, rabbit_farm_keeper, worker, [RabbitFarmModel])]} }.
 
