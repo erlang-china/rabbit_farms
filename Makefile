@@ -1,4 +1,6 @@
-REBAR=rebar
+REBAR    = rebar
+APPS     = kernel stdlib sasl erts ssl tools os_mon runtime_tools crypto inets public_key mnesia syntax_tools compiler
+CODE_PLT = ./rabbit_farms_dialyzer_plt
 
 .PHONY: all erl test clean doc 
 
@@ -31,19 +33,13 @@ win_console:
 doc:
 	$(REBAR) doc
 
-APPS = kernel stdlib sasl erts ssl crypto inets eunit syntax_tools compiler
-
-CODE_PLT = ./rabbit_farms_dialyzer_plt
+build_plt: compile
+	dialyzer --build_plt --output_plt $(CODE_PLT) --apps $(APPS) \
+		ebin deps/*/ebin
 
 check_plt: compile
 	dialyzer --check_plt --plt $(CODE_PLT) --apps $(APPS) \
-		./ebin \
-		deps/*/ebin
-
-build_plt: compile
-	dialyzer --build_plt --output_plt $(CODE_PLT) --apps $(APPS) \
-		./ebin \
-		deps/*/ebin
+		ebin deps/*/ebin
 
 dialyzer: compile
 	@echo
@@ -51,13 +47,4 @@ dialyzer: compile
 	@echo Use "'make build_plt'" to build PLT prior to using this target.
 	@echo
 	@sleep 1
-	dialyzer -Wno_return --plt $(CODE_PLT) ./ebin | \
-	    fgrep -v -f ./dialyzer.ignore-warnings
-
-cleanplt:
-	@echo 
-	@echo "Are you sure?  It takes about 1/2 hour to re-build."
-	@echo Deleting $(CODE_PLT) in 5 seconds.
-	@echo 
-	sleep 5
-	rm $(CODE_PLT)
+	dialyzer --plt $(CODE_PLT) ebin
