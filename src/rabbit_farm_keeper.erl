@@ -131,13 +131,8 @@ watch_rabbit_farm(FarmPid,RabbitFarm,Fun) when   is_pid(FarmPid),
 				process_flag(trap_exit, true),
 				link(FarmPid),
 			 	receive
-			 		{'EXIT', FarmPid, Reason} ->
-                    case is_function(Fun) of 
-                            true->
-					            Fun(FarmPid, RabbitFarm, Reason);
-                            false->
-                                ok
-                    end
+			 		{'EXIT', FarmPid, Reason} -> 
+			 			Fun(FarmPid, RabbitFarm, Reason)
 	 			end
  	end).
 
