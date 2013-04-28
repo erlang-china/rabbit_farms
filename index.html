@@ -43,63 +43,63 @@ use it just like gen_server call and cast.</p>
 
 <hr><p>config the <code>rabbit_famrs.app</code></p>
 
-<pre><code>{env, [{rabbit_farms,[tracking]},
-         {farm_tracking,[{username, &lt;&lt;"guest"&gt;&gt;},
-                                 {password, &lt;&lt;"V2pOV2JHTXpVVDA9"&gt;&gt;}, %% three_times_base64("guest")
-                                 {virtual_host, &lt;&lt;"/"&gt;&gt;},
-                                 {host, "localhost"},
-                                 {port, 5672},
-                       {feeders,[
-                                  [{channel_count,1},
-                                   {exchange, &lt;&lt;"tracking.logs"&gt;&gt;},
-                                   {type, &lt;&lt;"topic"&gt;&gt;}]
-                                ]}
-                       ]}
-]}
-</code></pre>
+<div class="highlight"><pre>    <span class="p">{</span><span class="n">env</span><span class="p">,</span> <span class="p">[{</span><span class="n">rabbit_farms</span><span class="p">,[</span><span class="n">tracking</span><span class="p">]},</span>
+             <span class="p">{</span><span class="n">farm_tracking</span><span class="p">,[{</span><span class="n">username</span><span class="p">,</span> <span class="o">&lt;&lt;</span><span class="s">"guest"</span><span class="o">&gt;&gt;</span><span class="p">},</span>
+                                     <span class="p">{</span><span class="n">password</span><span class="p">,</span> <span class="o">&lt;&lt;</span><span class="s">"V2pOV2JHTXpVVDA9"</span><span class="o">&gt;&gt;</span><span class="p">},</span> <span class="c">%% triple_times_base64("guest")</span>
+                                     <span class="p">{</span><span class="n">virtual_host</span><span class="p">,</span> <span class="o">&lt;&lt;</span><span class="s">"/"</span><span class="o">&gt;&gt;</span><span class="p">},</span>
+                                     <span class="p">{</span><span class="n">host</span><span class="p">,</span> <span class="s">"localhost"</span><span class="p">},</span>
+                                     <span class="p">{</span><span class="n">port</span><span class="p">,</span> <span class="mi">5672</span><span class="p">},</span>
+                           <span class="p">{</span><span class="n">feeders</span><span class="p">,[</span>
+                                      <span class="p">[{</span><span class="n">channel_count</span><span class="p">,</span><span class="mi">1</span><span class="p">},</span>
+                                       <span class="p">{</span><span class="n">exchange</span><span class="p">,</span> <span class="o">&lt;&lt;</span><span class="s">"tracking.logs"</span><span class="o">&gt;&gt;</span><span class="p">},</span>
+                                       <span class="p">{</span><span class="n">type</span><span class="p">,</span> <span class="o">&lt;&lt;</span><span class="s">"topic"</span><span class="o">&gt;&gt;</span><span class="p">}]</span>
+                                    <span class="p">]}</span>
+                           <span class="p">]}</span>
+    <span class="p">]}</span>
+</pre></div>
 
 <h4>publish</h4>
 
-<pre><code>1&gt;RabbitCarrot = #rabbit_carrot{farm_name = tracking, exchange = &lt;&lt;"tracking.logs"&gt;&gt;, 
-                 routing_key = &lt;&lt;"routing_key"&gt;&gt;, 
-                 message = &lt;&lt;""&gt;&gt;}.
-  #rabbit_carrot{farm_name = tracking,
-           exchange = &lt;&lt;"tracking.logs"&gt;&gt;,
-           routing_key = &lt;&lt;"routing_key"&gt;&gt;,message = &lt;&lt;&gt;&gt;,
-           content_type = undefined}
+<div class="highlight"><pre>    <span class="mi">1</span><span class="o">&gt;</span><span class="nv">RabbitCarrot</span> <span class="o">=</span> <span class="nl">#rabbit_carrot</span><span class="p">{</span><span class="n">farm_name</span> <span class="o">=</span> <span class="n">tracking</span><span class="p">,</span> <span class="n">exchange</span> <span class="o">=</span> <span class="o">&lt;&lt;</span><span class="s">"tracking.logs"</span><span class="o">&gt;&gt;</span><span class="p">,</span> 
+                     <span class="n">routing_key</span> <span class="o">=</span> <span class="o">&lt;&lt;</span><span class="s">"routing_key"</span><span class="o">&gt;&gt;</span><span class="p">,</span> 
+                     <span class="n">message</span> <span class="o">=</span> <span class="o">&lt;&lt;</span><span class="s">""</span><span class="o">&gt;&gt;</span><span class="p">}.</span>
+      <span class="nl">#rabbit_carrot</span><span class="p">{</span><span class="n">farm_name</span> <span class="o">=</span> <span class="n">tracking</span><span class="p">,</span>
+               <span class="n">exchange</span> <span class="o">=</span> <span class="o">&lt;&lt;</span><span class="s">"tracking.logs"</span><span class="o">&gt;&gt;</span><span class="p">,</span>
+               <span class="n">routing_key</span> <span class="o">=</span> <span class="o">&lt;&lt;</span><span class="s">"routing_key"</span><span class="o">&gt;&gt;</span><span class="p">,</span><span class="n">message</span> <span class="o">=</span> <span class="o">&lt;&lt;&gt;&gt;</span><span class="p">,</span>
+               <span class="n">content_type</span> <span class="o">=</span> <span class="n">undefined</span><span class="p">}</span>
 
-2&gt;rabbit_farms:publish(cast, RabbitCarrot). %%asynchronous
-3&gt;rabbit_farms:publish(call, RabbitCarrot). %%synchronization
-</code></pre>
+    <span class="mi">2</span><span class="o">&gt;</span><span class="nn">rabbit_farms</span><span class="p">:</span><span class="nf">publish</span><span class="p">(</span><span class="n">cast</span><span class="p">,</span> <span class="nv">RabbitCarrot</span><span class="p">).</span> <span class="c">%%asynchronous</span>
+    <span class="mi">3</span><span class="o">&gt;</span><span class="nn">rabbit_farms</span><span class="p">:</span><span class="nf">publish</span><span class="p">(</span><span class="n">call</span><span class="p">,</span> <span class="nv">RabbitCarrot</span><span class="p">).</span> <span class="c">%%synchronization</span>
+</pre></div>
 
 <h4>batch publish</h4>
 
-<pre><code>1&gt;Body1 = #rabbit_carrot_body{routing_key = &lt;&lt;"routing_key"&gt;&gt;, message = &lt;&lt;"message1"&gt;&gt;}.
-  #rabbit_carrot_body{routing_key = &lt;&lt;"routing_key1"&gt;&gt;,
-                message = &lt;&lt;"message1"&gt;&gt;}
+<div class="highlight"><pre>    <span class="mi">1</span><span class="o">&gt;</span><span class="nv">Body1</span> <span class="o">=</span> <span class="nl">#rabbit_carrot_body</span><span class="p">{</span><span class="n">routing_key</span> <span class="o">=</span> <span class="o">&lt;&lt;</span><span class="s">"routing_key"</span><span class="o">&gt;&gt;</span><span class="p">,</span> <span class="n">message</span> <span class="o">=</span> <span class="o">&lt;&lt;</span><span class="s">"message1"</span><span class="o">&gt;&gt;</span><span class="p">}.</span>
+      <span class="nl">#rabbit_carrot_body</span><span class="p">{</span><span class="n">routing_key</span> <span class="o">=</span> <span class="o">&lt;&lt;</span><span class="s">"routing_key1"</span><span class="o">&gt;&gt;</span><span class="p">,</span>
+                    <span class="n">message</span> <span class="o">=</span> <span class="o">&lt;&lt;</span><span class="s">"message1"</span><span class="o">&gt;&gt;</span><span class="p">}</span>
 
-2&gt;Body2 = #rabbit_carrot_body{routing_key = &lt;&lt;"routing_key"&gt;&gt;, message = &lt;&lt;"message2"&gt;&gt;}.
-  #rabbit_carrot_body{routing_key = &lt;&lt;"routing_key2"&gt;&gt;,
-                message = &lt;&lt;"message2"&gt;&gt;}
+    <span class="mi">2</span><span class="o">&gt;</span><span class="nv">Body2</span> <span class="o">=</span> <span class="nl">#rabbit_carrot_body</span><span class="p">{</span><span class="n">routing_key</span> <span class="o">=</span> <span class="o">&lt;&lt;</span><span class="s">"routing_key"</span><span class="o">&gt;&gt;</span><span class="p">,</span> <span class="n">message</span> <span class="o">=</span> <span class="o">&lt;&lt;</span><span class="s">"message2"</span><span class="o">&gt;&gt;</span><span class="p">}.</span>
+      <span class="nl">#rabbit_carrot_body</span><span class="p">{</span><span class="n">routing_key</span> <span class="o">=</span> <span class="o">&lt;&lt;</span><span class="s">"routing_key2"</span><span class="o">&gt;&gt;</span><span class="p">,</span>
+                    <span class="n">message</span> <span class="o">=</span> <span class="o">&lt;&lt;</span><span class="s">"message2"</span><span class="o">&gt;&gt;</span><span class="p">}</span>
 
-3&gt;RabbitCarrots = #rabbit_carrots{farm_name            = tracking,
-                                  exchange             = &lt;&lt;"tracking.logs"&gt;&gt;, 
-                                  rabbit_carrot_bodies = [Body1,Body2]}.
+    <span class="mi">3</span><span class="o">&gt;</span><span class="nv">RabbitCarrots</span> <span class="o">=</span> <span class="nl">#rabbit_carrots</span><span class="p">{</span><span class="n">farm_name</span>            <span class="o">=</span> <span class="n">tracking</span><span class="p">,</span>
+                                      <span class="n">exchange</span>             <span class="o">=</span> <span class="o">&lt;&lt;</span><span class="s">"tracking.logs"</span><span class="o">&gt;&gt;</span><span class="p">,</span> 
+                                      <span class="n">rabbit_carrot_bodies</span> <span class="o">=</span> <span class="p">[</span><span class="nv">Body1</span><span class="p">,</span><span class="nv">Body2</span><span class="p">]}.</span>
 
-  #rabbit_carrots{
-                    farm_name = tracking,exchange = &lt;&lt;"tracking.logs"&gt;&gt;,
-                    rabbit_carrot_bodies = 
-                        [#rabbit_carrot_body{
-                             routing_key = &lt;&lt;"routing_key"&gt;&gt;,
-                             message = &lt;&lt;"message1"&gt;&gt;},
-                         #rabbit_carrot_body{
-                             routing_key = &lt;&lt;"routing_key"&gt;&gt;,
-                             message = &lt;&lt;"message2"&gt;&gt;}],
-                    content_type = undefined}
+      <span class="nl">#rabbit_carrots</span><span class="p">{</span>
+                        <span class="n">farm_name</span> <span class="o">=</span> <span class="n">tracking</span><span class="p">,</span><span class="n">exchange</span> <span class="o">=</span> <span class="o">&lt;&lt;</span><span class="s">"tracking.logs"</span><span class="o">&gt;&gt;</span><span class="p">,</span>
+                        <span class="n">rabbit_carrot_bodies</span> <span class="o">=</span> 
+                            <span class="p">[</span><span class="nl">#rabbit_carrot_body</span><span class="p">{</span>
+                                 <span class="n">routing_key</span> <span class="o">=</span> <span class="o">&lt;&lt;</span><span class="s">"routing_key"</span><span class="o">&gt;&gt;</span><span class="p">,</span>
+                                 <span class="n">message</span> <span class="o">=</span> <span class="o">&lt;&lt;</span><span class="s">"message1"</span><span class="o">&gt;&gt;</span><span class="p">},</span>
+                             <span class="nl">#rabbit_carrot_body</span><span class="p">{</span>
+                                 <span class="n">routing_key</span> <span class="o">=</span> <span class="o">&lt;&lt;</span><span class="s">"routing_key"</span><span class="o">&gt;&gt;</span><span class="p">,</span>
+                                 <span class="n">message</span> <span class="o">=</span> <span class="o">&lt;&lt;</span><span class="s">"message2"</span><span class="o">&gt;&gt;</span><span class="p">}],</span>
+                        <span class="n">content_type</span> <span class="o">=</span> <span class="n">undefined</span><span class="p">}</span>
 
-4&gt;rabbit_farms:publish(cast, RabbitCarrots). %%asynchronous
-5&gt;rabbit_farms:publish(call, RabbitCarrots). %%synchronization
-</code></pre>
+    <span class="mi">4</span><span class="o">&gt;</span><span class="nn">rabbit_farms</span><span class="p">:</span><span class="nf">publish</span><span class="p">(</span><span class="n">cast</span><span class="p">,</span> <span class="nv">RabbitCarrots</span><span class="p">).</span> <span class="c">%%asynchronous</span>
+    <span class="mi">5</span><span class="o">&gt;</span><span class="nn">rabbit_farms</span><span class="p">:</span><span class="nf">publish</span><span class="p">(</span><span class="n">call</span><span class="p">,</span> <span class="nv">RabbitCarrots</span><span class="p">).</span> <span class="c">%%synchronization</span>
+</pre></div>
       </section>
     </div>
 
