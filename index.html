@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset='utf-8'>
+    <meta http-equiv="X-UA-Compatible" content="chrome=1">
+
+    <link rel="stylesheet" type="text/css" href="stylesheets/stylesheet.css" media="screen" />
+    <link rel="stylesheet" type="text/css" href="stylesheets/pygment_trac.css" media="screen" />
+    <link rel="stylesheet" type="text/css" href="stylesheets/print.css" media="print" />
+
+    <title>Rabbit farms by ErlangChina</title>
+  </head>
+
+  <body>
+
+    <header>
+      <div class="container">
+        <h1>Rabbit farms</h1>
+        <h2>Rabbit farms is a standalone service for publish RabbitMQ messages</h2>
+
+        <section id="downloads">
+          <a href="https://github.com/ErlangChina/rabbit_farms/zipball/master" class="btn">Download as .zip</a>
+          <a href="https://github.com/ErlangChina/rabbit_farms/tarball/master" class="btn">Download as .tar.gz</a>
+          <a href="https://github.com/ErlangChina/rabbit_farms" class="btn btn-github"><span class="icon"></span>View on GitHub</a>
+        </section>
+      </div>
+    </header>
+
+    <div class="container">
+      <section id="main_content">
+        <h1>rabbit_farms</h1>
+
+<p>Rabbit farms is a standalone service for publish RabbitMQ messages that cast by another erlang apps.</p>
+
+<h5>This is a beta version.</h5>
+
+<h3>Usage scenario</h3>
+
+<hr><p>The others erlang app publish the messages to the RabbitMQ without reference amqp_client libs, 
+use it just like gen_server call and cast.</p>
+
+<h3>Usage:</h3>
+
+<hr><p>config the <code>rabbit_famrs.app</code></p>
+
+<pre><code>{env, [{rabbit_farms,[tracking]},
+         {farm_tracking,[{username, &lt;&lt;"guest"&gt;&gt;},
+                                 {password, &lt;&lt;"V2pOV2JHTXpVVDA9"&gt;&gt;}, %% three_times_base64("guest")
+                                 {virtual_host, &lt;&lt;"/"&gt;&gt;},
+                                 {host, "localhost"},
+                                 {port, 5672},
+                       {feeders,[
+                                  [{channel_count,1},
+                                   {exchange, &lt;&lt;"tracking.logs"&gt;&gt;},
+                                   {type, &lt;&lt;"topic"&gt;&gt;}]
+                                ]}
+                       ]}
+]}
+</code></pre>
+
+<h4>publish</h4>
+
+<pre><code>1&gt;RabbitCarrot = #rabbit_carrot{farm_name = tracking, exchange = &lt;&lt;"tracking.logs"&gt;&gt;, 
+                 routing_key = &lt;&lt;"routing_key"&gt;&gt;, 
+                 message = &lt;&lt;""&gt;&gt;}.
+  #rabbit_carrot{farm_name = tracking,
+           exchange = &lt;&lt;"tracking.logs"&gt;&gt;,
+           routing_key = &lt;&lt;"routing_key"&gt;&gt;,message = &lt;&lt;&gt;&gt;,
+           content_type = undefined}
+
+2&gt;rabbit_farms:publish(cast, RabbitCarrot). %%asynchronous
+3&gt;rabbit_farms:publish(call, RabbitCarrot). %%synchronization
+</code></pre>
+
+<h4>batch publish</h4>
+
+<pre><code>1&gt;Body1 = #rabbit_carrot_body{routing_key = &lt;&lt;"routing_key"&gt;&gt;, message = &lt;&lt;"message1"&gt;&gt;}.
+  #rabbit_carrot_body{routing_key = &lt;&lt;"routing_key1"&gt;&gt;,
+                message = &lt;&lt;"message1"&gt;&gt;}
+
+2&gt;Body2 = #rabbit_carrot_body{routing_key = &lt;&lt;"routing_key"&gt;&gt;, message = &lt;&lt;"message2"&gt;&gt;}.
+  #rabbit_carrot_body{routing_key = &lt;&lt;"routing_key2"&gt;&gt;,
+                message = &lt;&lt;"message2"&gt;&gt;}
+
+3&gt;RabbitCarrots = #rabbit_carrots{farm_name            = tracking,
+                                  exchange             = &lt;&lt;"tracking.logs"&gt;&gt;, 
+                                  rabbit_carrot_bodies = [Body1,Body2]}.
+
+  #rabbit_carrots{
+                    farm_name = tracking,exchange = &lt;&lt;"tracking.logs"&gt;&gt;,
+                    rabbit_carrot_bodies = 
+                        [#rabbit_carrot_body{
+                             routing_key = &lt;&lt;"routing_key"&gt;&gt;,
+                             message = &lt;&lt;"message1"&gt;&gt;},
+                         #rabbit_carrot_body{
+                             routing_key = &lt;&lt;"routing_key"&gt;&gt;,
+                             message = &lt;&lt;"message2"&gt;&gt;}],
+                    content_type = undefined}
+
+4&gt;rabbit_farms:publish(cast, RabbitCarrots). %%asynchronous
+5&gt;rabbit_farms:publish(call, RabbitCarrots). %%synchronization
+</code></pre>
+      </section>
+    </div>
+
+              <script type="text/javascript">
+            var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");
+            document.write(unescape("%3Cscript src='" + gaJsHost + "google-analytics.com/ga.js' type='text/javascript'%3E%3C/script%3E"));
+          </script>
+          <script type="text/javascript">
+            try {
+              var pageTracker = _gat._getTracker("UA-40501533-1");
+            pageTracker._trackPageview();
+            } catch(err) {}
+          </script>
+
+  </body>
+</html>
