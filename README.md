@@ -14,7 +14,7 @@ use it just like gen_server call and cast.
 ###Usage:
 -------
 config the `rabbit_famrs.app`
-
+`````erlang
     {env, [{rabbit_farms,[tracking]},
     	     {farm_tracking,[{username, <<"guest">>},
               						 {password, <<"V2pOV2JHTXpVVDA9">>}, %% three_times_base64("guest")
@@ -28,8 +28,9 @@ config the `rabbit_famrs.app`
                                     ]}
                            ]}
     ]}
-
+`````
 ####publish 
+`````erlang
     1>RabbitCarrot = #rabbit_carrot{farm_name = tracking, exchange = <<"tracking.logs">>, 
                      routing_key = <<"routing_key">>, 
                      message = <<"">>}.
@@ -40,8 +41,9 @@ config the `rabbit_famrs.app`
 
     2>rabbit_farms:publish(cast, RabbitCarrot). %%asynchronous
     3>rabbit_farms:publish(call, RabbitCarrot). %%synchronization
-
+`````
 ####batch publish
+`````erlang
     1>Body1 = #rabbit_carrot_body{routing_key = <<"routing_key">>, message = <<"message1">>}.
       #rabbit_carrot_body{routing_key = <<"routing_key1">>,
                     message = <<"message1">>}
@@ -67,3 +69,4 @@ config the `rabbit_famrs.app`
 
     4>rabbit_farms:publish(cast, RabbitCarrots). %%asynchronous
     5>rabbit_farms:publish(call, RabbitCarrots). %%synchronization
+`````
