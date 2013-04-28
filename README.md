@@ -17,7 +17,7 @@ config the `rabbit_famrs.app`
 `````erlang
     {env, [{rabbit_farms,[tracking]},
     	     {farm_tracking,[{username, <<"guest">>},
-              						 {password, <<"V2pOV2JHTXpVVDA9">>}, %% three_times_base64("guest")
+              						 {password, <<"V2pOV2JHTXpVVDA9">>}, %% triple_times_base64("guest")
               						 {virtual_host, <<"/">>},
               						 {host, "localhost"},
               						 {port, 5672},
