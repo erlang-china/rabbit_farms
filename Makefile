@@ -1,4 +1,4 @@
-REBAR    = rebar
+REBAR    = ./rebar
 APPS     = kernel stdlib sasl erts ssl tools os_mon runtime_tools crypto inets public_key mnesia syntax_tools compiler
 CODE_PLT = ./rabbit_farms_dialyzer_plt
 
