@@ -95,7 +95,7 @@ handle_call({publish, RabbitCarrot}, From, State)
 handle_call({publish, RabbitCarrots}, From, State) 
 					when is_record(RabbitCarrots,rabbit_carrots) ->
     spawn(fun()-> 
-    		 Reply = publish_rabbit_carrots(cast,RabbitCarrots),
+    		 Reply = publish_rabbit_carrots(call,RabbitCarrots),
     		 gen_server2:reply(From, Reply)
     	 end),
     {noreply, State};
