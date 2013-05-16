@@ -133,8 +133,7 @@ handle_cast({on_rabbit_farm_die, _Reason, RabbitFarm}, State)
     InitRabbitFarm = RabbitFarm#rabbit_farm{status = inactive, connection = undefined, channels = orddict:new()},
     true           = ets:insert(?ETS_FARMS, InitRabbitFarm),
     {noreply, State};
-handle_cast(Info, State) ->
-	erlang:display(Info),
+handle_cast(_Info, State) ->
     {noreply, State}.
 
 handle_info({init}, State) ->
@@ -237,22 +236,27 @@ publish_rabbit_carrots(Type, #rabbit_carrots{
 							}  = RabbitCarrots)
 				when is_record(RabbitCarrots,rabbit_carrots)->
 	 
-	FunList=
+	FunTuples=
 	[publish_fun(Type, Exchange, RoutingKey, Message, ContentType)
 	||#rabbit_carrot_body{routing_key = RoutingKey, message = Message} <- RabbitCarrotBodies],
-	Funs= fun(Channel) ->
-			[F(Channel)||F<-FunList]
-		end,
-	call_warper(FarmName, Funs).
+	call_warper(FarmName, FunTuples).
 
 native_rabbit_call(Type, FarmName, Method, Content)->
-	F = get_fun(Type, Method, Content),
-	call_warper(FarmName, F).
+	F = get_fun(Type),
+	call_warper(FarmName, [{F, Method, Content}]).
 
-call_warper(FarmName, Fun) 
-					when is_function(Fun,1) ->			
+
+get_rabbit_farm(FarmName)->
 	case ets:lookup(?ETS_FARMS, FarmName) of 
-		 [RabbitFarm] ->
+		 [RabbitFarm] when is_record(RabbitFarm,rabbit_farm)->
+		 	RabbitFarm;
+		 _->
+		 	undefined
+	end.
+
+call_warper(FarmName, FunTuples) ->			
+	case get_rabbit_farm(FarmName) of 
+		 RabbitFarm when is_record(RabbitFarm,rabbit_farm)->
 		 	#rabbit_farm{connection = Connection, channels = Channels} = RabbitFarm,
 		 	case is_process_alive(Connection) of 
 		 		true->
@@ -262,7 +266,7 @@ call_warper(FarmName, Fun)
 	    				 	random:seed(os:timestamp()),
 							ChannelIndex = random:uniform(ChannelSize),
 							Channel      = orddict:fetch(ChannelIndex, Channels),
-	    				 	Ret          = Fun(Channel),
+							Ret          = [F(Channel, Method, Content)||{F, Method, Content} <-FunTuples],
 							{ok, Ret};
 	    				 false->
 	    				 	error_logger:error_msg("can not find channel from rabbit farm:~p~n",[FarmName])
@@ -271,25 +275,25 @@ call_warper(FarmName, Fun)
 					error_logger:error_msg("the farm ~p died~n",[FarmName]),
 					{error, farm_died}
 			end;
-		 _->
+		 undefined->
 		 	error_logger:error_msg("can not find rabbit farm:~p~n",[FarmName]),
 		 	{error, farm_not_exist}
 	end.
 
 publish_fun(Type, Exchange, RoutingKey, Message, ContentType)->
-	get_fun(Type, 
-			#'basic.publish'{ exchange    = Exchange,
-	    					  routing_key = ensure_binary(RoutingKey)},
-	    	#amqp_msg{props = #'P_basic'{content_type = ContentType}, payload = ensure_binary(Message)}).
+	{
+		get_fun(Type),
+		%% Method
+		#'basic.publish'{ exchange    = Exchange,
+	    				  routing_key = ensure_binary(RoutingKey)},
+	    %% Content
+	    #amqp_msg{props = #'P_basic'{content_type = ContentType}, payload = ensure_binary(Message)}
+	}.
 
-get_fun(cast, Method, Content)->
-	fun(Channel)->
-			amqp_channel:cast(Channel, Method, Content)
-	end;
-get_fun(call, Method, Content)->
-	fun(Channel)->
-			amqp_channel:call(Channel, Method, Content)
-	end.
+get_fun(cast)->
+	fun amqp_channel:cast/3;
+get_fun(call)->
+	fun amqp_channel:call/3.
 
 ensure_binary(undefined)->
 	undefined;

@@ -92,18 +92,21 @@ code_change(_OldVsn, State, _Extra) ->
 %% Internal functions
 %% ====================================================================
 create_rabbit_farm_instance(#rabbit_farm{amqp_params    = AmqpParams,
-		 		  		   				 feeders        = Feeders,
-		 		  		   				 farm_name      = FarmName} = Farm) 
+		 		  		   				 feeders        = Feeders} = Farm) 
 								when is_record(Farm,rabbit_farm)->
 	SecPassword	 	 = AmqpParams#amqp_params_network.password,
 	DecodedAmqpParms = AmqpParams#amqp_params_network{password = decode_base64(SecPassword)},
+	Keeper           = self(),
 	case amqp_connection:start(DecodedAmqpParms) of
 		{ok, Connection}->
-				watch_rabbit_farm( Connection, 
+				watch_rabbit_farm( Keeper,
+								   Connection,
 								   Farm, 
-								   fun(FarmPid, RabbitFarm, Reason) -> 
-											on_rabbit_farm_exception(FarmName, FarmPid, RabbitFarm, Reason)
-								   end),
+								   fun(KP, CON, RBI, RS)-> 
+								   		on_rabbit_farm_exception(KP, CON, RBI, RS)
+								   end
+								   ),
+
 				ChannelList = lists:flatten( [[ 
 										  	begin 
 												{ok, Channel}           = amqp_connection:open_channel(Connection),
@@ -119,20 +122,24 @@ create_rabbit_farm_instance(#rabbit_farm{amqp_params    = AmqpParams,
 				{error, Reason}
 	end.
 	
-on_rabbit_farm_exception(FarmName, FarmPid, RabbitFarmInstance, Reason)->
-	FarmNodeName = ?TO_FARM_NODE_NAME(FarmName),
+on_rabbit_farm_exception(Keeper, Connection, RabbitFarmInstance, Reason)->
 	gen_server2:cast(?RABBIT_FARMS,{on_rabbit_farm_die,Reason,RabbitFarmInstance}),
-	gen_server2:cast(FarmNodeName, {on_rabbit_farm_die,Reason,RabbitFarmInstance}),
-	error_logger:error_msg("farm_pid:~n~p~nrabbit_farm:~n~p~nreason:~n~p~n",[FarmPid,RabbitFarmInstance,Reason]).
+	gen_server2:cast(Keeper, {on_rabbit_farm_die,Reason,RabbitFarmInstance}),
+	error_logger:error_msg("connection_pid:~n~p~nrabbit_farm:~n~p~nreason:~n~p~n",[Connection,RabbitFarmInstance,Reason]).
 
-watch_rabbit_farm(FarmPid,RabbitFarm,Fun) when   is_pid(FarmPid),
+watch_rabbit_farm(Keeper, Connection, RabbitFarm, Fun) when   
+												 is_pid(Keeper),
+												 is_pid(Connection),
 									 			 is_record(RabbitFarm,rabbit_farm)->
 	 spawn_link(fun() ->
 				process_flag(trap_exit, true),
-				link(FarmPid),
+				link(Connection),
+				link(Keeper),
 			 	receive
-			 		{'EXIT', FarmPid, Reason} -> 
-			 			Fun(FarmPid, RabbitFarm, Reason)
+			 		{'EXIT', Connection, Reason} -> 
+			 			Fun(Keeper, Connection, RabbitFarm, Reason);
+			 		{'EXIT', Keeper, _Reason} -> 
+			 			amqp_connection:close(Connection)
 	 			end
  	end).
 
