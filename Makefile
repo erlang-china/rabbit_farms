@@ -49,4 +49,4 @@ dialyzer: compile
 	@echo Use "'make build_plt'" to build PLT prior to using this target.
 	@echo
 	@sleep 1
-	dialyzer --plt $(CODE_PLT) ebin
+	dialyzer --plt $(CODE_PLT) ebin deps/*/ebin
