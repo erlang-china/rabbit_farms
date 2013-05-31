@@ -3,16 +3,16 @@ rabbit_farms
 
 Rabbit farms is a standalone service for publishing messages to RabbitMQ from other another erlang apps.
 
-#####This is a beta version.
+##### This is a beta version.
 
-###Usage scenario
+### Usage scenario
 -------
 
 Other (external) erlang applications publish messages to RabbitMQ without needing to reference the amqp_client, 
 using it just like the gen_server call/cast API.
 
 
-###Usage:
+### Usage:
 -------
 Configure the `rabbit_famrs.app`
 `````erlang
@@ -30,7 +30,7 @@ Configure the `rabbit_famrs.app`
                            ]}
     ]}
 `````
-####publish 
+#### publish 
 `````erlang
     1>RabbitCarrot = #rabbit_carrot{farm_name = tracking, exchange = <<"tracking.logs">>, 
                      routing_key = <<"routing_key">>, 
@@ -43,7 +43,7 @@ Configure the `rabbit_famrs.app`
     2>rabbit_farms:publish(cast, RabbitCarrot). %%asynchronous
     3>rabbit_farms:publish(call, RabbitCarrot). %%synchronization
 `````
-####batch publish
+#### batch publish
 `````erlang
     1>Body1 = #rabbit_carrot_body{routing_key = <<"routing_key">>, message = <<"message1">>}.
       #rabbit_carrot_body{routing_key = <<"routing_key1">>,
