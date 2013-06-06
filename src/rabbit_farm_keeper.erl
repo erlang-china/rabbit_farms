@@ -32,7 +32,7 @@
 -export([start_link/1, get_status/1]).
 
 start_link(RabbitFarmModel) ->
-	#rabbit_farm{farm_name = FarmName} = RabbitFarmModel,
+    #rabbit_farm{farm_name = FarmName} = RabbitFarmModel,
     gen_server2:start_link({local, FarmName}, ?MODULE, [RabbitFarmModel], []).
 
 get_status(FarmName) ->
@@ -48,36 +48,36 @@ init([RabbitFarm]) when is_record(RabbitFarm, rabbit_farm)->
     {ok, #state{}}.
 
 handle_call({get_status}, _From, State)->
-	{reply, {ok, State}, State};
+    {reply, {ok, State}, State};
 handle_call(_Request, _From, State) ->
     Reply = ok,
     {reply, Reply, State}.
 
 handle_cast({on_rabbit_farm_die,Reason,RabbitFarm}, State) 
-					when is_record(RabbitFarm,rabbit_farm) ->
+                    when is_record(RabbitFarm,rabbit_farm) ->
     NewState = State#state{status = inactive, rabbit_farm = RabbitFarm#rabbit_farm{connection = undefined, channels = orddict:new()}},
     Server = self(),
     spawn_link(fun()->
-		try 
-			erlang:send_after(?RECONNECT_TIME, Server, {init, RabbitFarm})
-	    catch
-	    	Class:Reason -> {Class, Reason} 
-	    end
-  	end),
+        try 
+            erlang:send_after(?RECONNECT_TIME, Server, {init, RabbitFarm})
+        catch
+            Class:Reason -> {Class, Reason} 
+        end
+    end),
     {noreply, NewState};
 handle_cast(_Msg, State) ->
     {noreply, State}.
 
 handle_info({init, RabbitFarm}, State) ->
-	NewState = 
-	case create_rabbit_farm_instance(RabbitFarm) of 
-		{ok, FarmInstance}->
-			gen_server2:cast(?RABBIT_FARMS,{on_rabbit_farm_created,FarmInstance}),
-			State#state{status = actived, rabbit_farm = FarmInstance};
-		_->
-			State#state{status = inactive}
-	end,
-	{noreply, NewState};
+    NewState = 
+    case create_rabbit_farm_instance(RabbitFarm) of 
+        {ok, FarmInstance}->
+            gen_server2:cast(?RABBIT_FARMS,{on_rabbit_farm_created,FarmInstance}),
+            State#state{status = actived, rabbit_farm = FarmInstance};
+        _->
+            State#state{status = inactive}
+    end,
+    {noreply, NewState};
 handle_info(_Info, State) ->
     {noreply, State}.
 
@@ -91,58 +91,58 @@ code_change(_OldVsn, State, _Extra) ->
 %% Internal functions
 %% ====================================================================
 create_rabbit_farm_instance(#rabbit_farm{amqp_params    = AmqpParams,
-		 		  		   				 feeders        = Feeders} = Farm) 
-								when is_record(Farm,rabbit_farm)->
-	SecPassword	 	 = AmqpParams#amqp_params_network.password,
-	DecodedAmqpParms = AmqpParams#amqp_params_network{password = decode_base64(SecPassword)},
-	Keeper           = self(),
-	case amqp_connection:start(DecodedAmqpParms) of
-		{ok, Connection}->
-				watch_rabbit_farm( Keeper,
-								   Connection,
-								   Farm, 
-								   fun(KP, CON, RBI, RS)-> 
-								   		on_rabbit_farm_exception(KP, CON, RBI, RS)
-								   end
-								   ),
+                                         feeders        = Feeders} = Farm) 
+                                when is_record(Farm,rabbit_farm)->
+    SecPassword      = AmqpParams#amqp_params_network.password,
+    DecodedAmqpParms = AmqpParams#amqp_params_network{password = decode_base64(SecPassword)},
+    Keeper           = self(),
+    case amqp_connection:start(DecodedAmqpParms) of
+        {ok, Connection}->
+                watch_rabbit_farm( Keeper,
+                                   Connection,
+                                   Farm, 
+                                   fun(KP, CON, RBI, RS)-> 
+                                        on_rabbit_farm_exception(KP, CON, RBI, RS)
+                                   end
+                                   ),
 
-				ChannelList = lists:flatten( [[ 
-										  	begin 
-												{ok, Channel}           = amqp_connection:open_channel(Connection),
-												{'exchange.declare_ok'} = amqp_channel:call(Channel,Declare),
-												Channel
-										    end
-									  	    || _I <-lists:seq(1,ChannelCount)]
-									   	  || #rabbit_feeder{count = ChannelCount,declare = Declare} <- Feeders]),
-				IndexedChannels =  lists:zip(lists:seq(1,length(ChannelList)),ChannelList),
-				Channels        =  orddict:from_list(IndexedChannels),
-				{ok, Farm#rabbit_farm{connection = Connection, channels = Channels, status = actived}};
-		{error,Reason}->
-				{error, Reason}
-	end.
-	
+                ChannelList = lists:flatten( [[ 
+                                            begin 
+                                                {ok, Channel}           = amqp_connection:open_channel(Connection),
+                                                {'exchange.declare_ok'} = amqp_channel:call(Channel,Declare),
+                                                Channel
+                                            end
+                                            || _I <-lists:seq(1,ChannelCount)]
+                                          || #rabbit_feeder{count = ChannelCount,declare = Declare} <- Feeders]),
+                IndexedChannels =  lists:zip(lists:seq(1,length(ChannelList)),ChannelList),
+                Channels        =  orddict:from_list(IndexedChannels),
+                {ok, Farm#rabbit_farm{connection = Connection, channels = Channels, status = actived}};
+        {error,Reason}->
+                {error, Reason}
+    end.
+    
 on_rabbit_farm_exception(Keeper, Connection, RabbitFarmInstance, Reason)->
-	gen_server2:cast(?RABBIT_FARMS,{on_rabbit_farm_die,Reason,RabbitFarmInstance}),
-	gen_server2:cast(Keeper, {on_rabbit_farm_die,Reason,RabbitFarmInstance}),
-	error_logger:error_msg("connection_pid:~n~p~nrabbit_farm:~n~p~nreason:~n~p~n",[Connection,RabbitFarmInstance,Reason]).
+    gen_server2:cast(?RABBIT_FARMS,{on_rabbit_farm_die,Reason,RabbitFarmInstance}),
+    gen_server2:cast(Keeper, {on_rabbit_farm_die,Reason,RabbitFarmInstance}),
+    error_logger:error_msg("connection_pid:~n~p~nrabbit_farm:~n~p~nreason:~n~p~n",[Connection,RabbitFarmInstance,Reason]).
 
 watch_rabbit_farm(Keeper, Connection, RabbitFarm, Fun) when   
-												 is_pid(Keeper),
-												 is_pid(Connection),
-									 			 is_record(RabbitFarm,rabbit_farm)->
-	 spawn_link(fun() ->
-				process_flag(trap_exit, true),
-				link(Connection),
-				link(Keeper),
-			 	receive
-			 		{'EXIT', Connection, Reason} -> 
-			 			Fun(Keeper, Connection, RabbitFarm, Reason);
-			 		{'EXIT', Keeper, _Reason} -> 
-			 			amqp_connection:close(Connection)
-	 			end
- 	end).
+                                                 is_pid(Keeper),
+                                                 is_pid(Connection),
+                                                 is_record(RabbitFarm,rabbit_farm)->
+     spawn_link(fun() ->
+                process_flag(trap_exit, true),
+                link(Connection),
+                link(Keeper),
+                receive
+                    {'EXIT', Connection, Reason} -> 
+                        Fun(Keeper, Connection, RabbitFarm, Reason);
+                    {'EXIT', Keeper, _Reason} -> 
+                        amqp_connection:close(Connection)
+                end
+    end).
 
 decode_base64(Value)->
-	B1 = base64:decode(Value),
-	B2 = base64:decode(B1),
-	base64:decode(B2).
+    B1 = base64:decode(Value),
+    B2 = base64:decode(B1),
+    base64:decode(B2).

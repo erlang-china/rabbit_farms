@@ -52,29 +52,29 @@ get_status()->
     gen_server2:call(?SERVER, {get_status}).
 
 publish(cast, RabbitCarrot)
-				when is_record(RabbitCarrot,rabbit_carrot)->
-	gen_server2:cast(?SERVER, {publish, RabbitCarrot});
+                when is_record(RabbitCarrot,rabbit_carrot)->
+    gen_server2:cast(?SERVER, {publish, RabbitCarrot});
 publish(cast, RabbitCarrots)
-				when is_record(RabbitCarrots,rabbit_carrots)->
-	gen_server2:cast(?SERVER, {publish, RabbitCarrots});
+                when is_record(RabbitCarrots,rabbit_carrots)->
+    gen_server2:cast(?SERVER, {publish, RabbitCarrots});
 publish(call, RabbitCarrot)
-				when is_record(RabbitCarrot,rabbit_carrot)->
-	gen_server2:call(?SERVER, {publish, RabbitCarrot});
+                when is_record(RabbitCarrot,rabbit_carrot)->
+    gen_server2:call(?SERVER, {publish, RabbitCarrot});
 publish(call, RabbitCarrots)
-				when is_record(RabbitCarrots,rabbit_carrots)->
-	gen_server2:call(?SERVER, {publish, RabbitCarrots}).
+                when is_record(RabbitCarrots,rabbit_carrots)->
+    gen_server2:call(?SERVER, {publish, RabbitCarrots}).
 
 native_cast(FarmName, Method)->
-	gen_server2:cast(?SERVER, {native, {FarmName, Method, none}}).
+    gen_server2:cast(?SERVER, {native, {FarmName, Method, none}}).
 
 native_cast(FarmName, Method, Content)->
-	gen_server2:cast(?SERVER, {native, {FarmName, Method, Content}}).
+    gen_server2:cast(?SERVER, {native, {FarmName, Method, Content}}).
 
 native_call(FarmName, Method)->
-	gen_server2:cast(?SERVER, {native, {FarmName, Method, none}}).
+    gen_server2:cast(?SERVER, {native, {FarmName, Method, none}}).
 
 native_call(FarmName, Method, Content)->
-	gen_server2:cast(?SERVER, {native, {FarmName, Method, Content}}).
+    gen_server2:cast(?SERVER, {native, {FarmName, Method, Content}}).
 
 
 %%%===================================================================
@@ -86,50 +86,50 @@ init([]) ->
     {ok, #state{}}.
 
 handle_call({publish, RabbitCarrot}, From, State)
-					when is_record(RabbitCarrot, rabbit_carrot) ->
-	spawn(fun()-> 
-				Reply = publish_rabbit_carrot(call, RabbitCarrot),
-				gen_server2:reply(From, Reply)
-		  end),
-	{noreply, State};
-handle_call({publish, RabbitCarrots}, From, State) 
-					when is_record(RabbitCarrots,rabbit_carrots) ->
+                    when is_record(RabbitCarrot, rabbit_carrot) ->
     spawn(fun()-> 
-    		 Reply = publish_rabbit_carrots(call,RabbitCarrots),
-    		 gen_server2:reply(From, Reply)
-    	 end),
+                Reply = publish_rabbit_carrot(call, RabbitCarrot),
+                gen_server2:reply(From, Reply)
+          end),
+    {noreply, State};
+handle_call({publish, RabbitCarrots}, From, State) 
+                    when is_record(RabbitCarrots,rabbit_carrots) ->
+    spawn(fun()-> 
+             Reply = publish_rabbit_carrots(call,RabbitCarrots),
+             gen_server2:reply(From, Reply)
+         end),
     {noreply, State};
 handle_call({native, {FarmName, Method, Content}}, From, State) ->
-	spawn(fun()-> 
-				Reply = native_rabbit_call(call, FarmName, Method, Content),
-				gen_server2:reply(From, Reply)
-		  end),
-	{noreply, State};
+    spawn(fun()-> 
+                Reply = native_rabbit_call(call, FarmName, Method, Content),
+                gen_server2:reply(From, Reply)
+          end),
+    {noreply, State};
 handle_call({get_status}, _From, State)->
-	{reply, {ok, State}, State};
+    {reply, {ok, State}, State};
 handle_call(_Request, _From, State) ->
     Reply = {error, function_clause},
     {reply, Reply, State}.
 
 handle_cast({publish, RabbitCarrot}, State) 
-					when is_record(RabbitCarrot, rabbit_carrot) ->
+                    when is_record(RabbitCarrot, rabbit_carrot) ->
     spawn(fun()-> publish_rabbit_carrot(cast, RabbitCarrot) end),
     {noreply, State};
 handle_cast({publish, RabbitCarrots}, State) 
-					when is_record(RabbitCarrots,rabbit_carrots) ->
+                    when is_record(RabbitCarrots,rabbit_carrots) ->
     spawn(fun()-> 
-    		 publish_rabbit_carrots(cast, RabbitCarrots)
-    	 end),
+             publish_rabbit_carrots(cast, RabbitCarrots)
+         end),
     {noreply, State};
 handle_cast({native, {FarmName, Method, Content}}, State) ->
-	spawn(fun()-> native_rabbit_call(cast, FarmName, Method, Content) end),
-	{noreply, State};
+    spawn(fun()-> native_rabbit_call(cast, FarmName, Method, Content) end),
+    {noreply, State};
 handle_cast({on_rabbit_farm_created, RabbitFarmInstance}, State) ->
-	true = ets:insert(?ETS_FARMS, RabbitFarmInstance),
-	error_logger:info_msg("rabbit farm have been working:~n~p~n", [RabbitFarmInstance]),
-	{noreply, State};
+    true = ets:insert(?ETS_FARMS, RabbitFarmInstance),
+    error_logger:info_msg("rabbit farm have been working:~n~p~n", [RabbitFarmInstance]),
+    {noreply, State};
 handle_cast({on_rabbit_farm_die, _Reason, RabbitFarm}, State) 
-					when is_record(RabbitFarm, rabbit_farm) ->
+                    when is_record(RabbitFarm, rabbit_farm) ->
     InitRabbitFarm = RabbitFarm#rabbit_farm{status = inactive, connection = undefined, channels = orddict:new()},
     true           = ets:insert(?ETS_FARMS, InitRabbitFarm),
     {noreply, State};
@@ -137,8 +137,8 @@ handle_cast(_Info, State) ->
     {noreply, State}.
 
 handle_info({init}, State) ->
-	ets:new(?ETS_FARMS,[protected, named_table, {keypos, #rabbit_farm.farm_name}, {read_concurrency, true}]),
-	{ok, NewState} = init_rabbit_farm(State),
+    ets:new(?ETS_FARMS,[protected, named_table, {keypos, #rabbit_farm.farm_name}, {read_concurrency, true}]),
+    {ok, NewState} = init_rabbit_farm(State),
     {noreply, NewState};
 handle_info(_Info, State) ->
     {noreply, State}.
@@ -150,83 +150,83 @@ terminate(_Reason, _State) ->
     ok.
 
 init_rabbit_farm(State)->
-	{ok, ConfigFile} = application:get_env(?APP, config),
-	case load_config(ConfigFile) of 
-		ok ->
-			{ok, State#state{status = initialized}};
-		R->
-			R
-	end.
+    {ok, ConfigFile} = application:get_env(?APP, config),
+    case load_config(ConfigFile) of 
+        ok ->
+            {ok, State#state{status = initialized}};
+        R->
+            R
+    end.
 
 load_config(FileName) ->
-	case file:consult(FileName) of
-		{ok, Term} ->
-			Farms = proplists:get_value(rabbit_farms, Term, []),
-			[ begin
-				RabbitFarmModel = create_rabbit_farm_model(FarmName, FarmOptions),
-				create_rabbit_farm_instance(RabbitFarmModel)
-			  end
-			  || {FarmName, FarmOptions } <-Farms],
-			ok;
-		{error, Reason}->
-			ErrorMsg = [{filename, FileName},
+    case file:consult(FileName) of
+        {ok, Term} ->
+            Farms = proplists:get_value(rabbit_farms, Term, []),
+            [ begin
+                RabbitFarmModel = create_rabbit_farm_model(FarmName, FarmOptions),
+                create_rabbit_farm_instance(RabbitFarmModel)
+              end
+              || {FarmName, FarmOptions } <-Farms],
+            ok;
+        {error, Reason}->
+            ErrorMsg = [{filename, FileName},
                         {reason,   Reason}],
             error_logger:error_msg("load config error:~n~p~n", [ErrorMsg]),
-			{error, Reason}
-	end.
+            {error, Reason}
+    end.
 
 create_rabbit_farm_model(FarmName, FarmOptions) when is_list(FarmOptions)->
-	UserName    = proplists:get_value(username,FarmOptions,<<"guest">>),
-	Password    = proplists:get_value(password,FarmOptions,<<"V2pOV2JHTXpVVDA9">>),
-	VirtualHost = proplists:get_value(virtual_host,FarmOptions,<<"/">>),
-	Host        = proplists:get_value(host,FarmOptions,"localhost"),
-	Port        = proplists:get_value(port,FarmOptions,5672),
-	FeedsOpt	= proplists:get_value(feeders,FarmOptions,[]),
-	AmqpParam	= #amqp_params_network{
-						username     = ensure_binary(UserName),
-						password     = Password,
-						virtual_host = ensure_binary(VirtualHost),
-						host         = Host,
-						port         = Port
-						},
-	Feeders =
-	[begin 
-		Ticket       = proplists:get_value(ticket,FeedOpt,0),
-		Exchange     = proplists:get_value(exchange,FeedOpt),
-		Type         = proplists:get_value(type,FeedOpt,<<"direct">>),
-		Passive      = proplists:get_value(passive,FeedOpt,false),
-		Durable      = proplists:get_value(durable,FeedOpt,false),
-		AutoDelete   = proplists:get_value(auto_delete,FeedOpt,false),
-		Internal     = proplists:get_value(internal,FeedOpt,false),
-		NoWait       = proplists:get_value(nowait,FeedOpt,false),
-		Arguments    = proplists:get_value(arguments,FeedOpt,[]),
-		ChannelCount = proplists:get_value(channel_count,FeedOpt,[]),
-		#rabbit_feeder{ count   = ChannelCount,
-						declare =
-						#'exchange.declare'{
-									ticket      = Ticket,
-									exchange    = ensure_binary(Exchange),
-									type        = ensure_binary(Type),
-									passive     = Passive,
-									durable     = Durable,
-									auto_delete = AutoDelete,
-									internal    = Internal,
-									nowait      = NoWait,
-									arguments   = Arguments
-									}
-				 	  }
-	end
-	||FeedOpt <- FeedsOpt],
-	#rabbit_farm{farm_name = FarmName, amqp_params = AmqpParam, feeders = Feeders}.
+    UserName    = proplists:get_value(username,FarmOptions,<<"guest">>),
+    Password    = proplists:get_value(password,FarmOptions,<<"V2pOV2JHTXpVVDA9">>),
+    VirtualHost = proplists:get_value(virtual_host,FarmOptions,<<"/">>),
+    Host        = proplists:get_value(host,FarmOptions,"localhost"),
+    Port        = proplists:get_value(port,FarmOptions,5672),
+    FeedsOpt    = proplists:get_value(feeders,FarmOptions,[]),
+    AmqpParam   = #amqp_params_network{
+                        username     = ensure_binary(UserName),
+                        password     = Password,
+                        virtual_host = ensure_binary(VirtualHost),
+                        host         = Host,
+                        port         = Port
+                        },
+    Feeders =
+    [begin 
+        Ticket       = proplists:get_value(ticket,FeedOpt,0),
+        Exchange     = proplists:get_value(exchange,FeedOpt),
+        Type         = proplists:get_value(type,FeedOpt,<<"direct">>),
+        Passive      = proplists:get_value(passive,FeedOpt,false),
+        Durable      = proplists:get_value(durable,FeedOpt,false),
+        AutoDelete   = proplists:get_value(auto_delete,FeedOpt,false),
+        Internal     = proplists:get_value(internal,FeedOpt,false),
+        NoWait       = proplists:get_value(nowait,FeedOpt,false),
+        Arguments    = proplists:get_value(arguments,FeedOpt,[]),
+        ChannelCount = proplists:get_value(channel_count,FeedOpt,[]),
+        #rabbit_feeder{ count   = ChannelCount,
+                        declare =
+                        #'exchange.declare'{
+                                    ticket      = Ticket,
+                                    exchange    = ensure_binary(Exchange),
+                                    type        = ensure_binary(Type),
+                                    passive     = Passive,
+                                    durable     = Durable,
+                                    auto_delete = AutoDelete,
+                                    internal    = Internal,
+                                    nowait      = NoWait,
+                                    arguments   = Arguments
+                                    }
+                      }
+    end
+    ||FeedOpt <- FeedsOpt],
+    #rabbit_farm{farm_name = FarmName, amqp_params = AmqpParam, feeders = Feeders}.
 
 create_rabbit_farm_instance(RabbitFarmModel)->
-	#rabbit_farm{farm_name = FarmName} = RabbitFarmModel,
-	FarmSups   = supervisor:which_children(rabbit_farms_sup),
-	MatchedSup =
-	[{Id, Child, Type, Modules} ||{Id, Child, Type, Modules} <-FarmSups, Id =:= FarmName], 
-	case length(MatchedSup) > 0 of 
-		false->
-			supervisor:start_child(rabbit_farm_keeper_sup,
+    #rabbit_farm{farm_name = FarmName} = RabbitFarmModel,
+    FarmSups   = supervisor:which_children(rabbit_farms_sup),
+    MatchedSup =
+    [{Id, Child, Type, Modules} ||{Id, Child, Type, Modules} <-FarmSups, Id =:= FarmName], 
+    case length(MatchedSup) > 0 of 
+        false->
+            supervisor:start_child(rabbit_farm_keeper_sup,
                                     {FarmName, {rabbit_farm_keeper, 
                                                 start_link, 
                                                 [RabbitFarmModel]},
@@ -234,93 +234,93 @@ create_rabbit_farm_instance(RabbitFarmModel)->
                                     5000, 
                                     worker, 
                                     [eredis_keeper]});
-			%%supervisor:start_child(rabbit_farms_sup,{rabbit_farm_keeper_sup, {rabbit_farm_keeper_sup, start_link, [RabbitFarmModel]}, permanent, 5000, supervisor, [rabbit_farm_keeper_sup]});
-		true->
-			error_logger:error_msg("create rabbit farm keeper failed, farm:~n~p~n",[RabbitFarmModel])
-	end,
-	ok.
+            %%supervisor:start_child(rabbit_farms_sup,{rabbit_farm_keeper_sup, {rabbit_farm_keeper_sup, start_link, [RabbitFarmModel]}, permanent, 5000, supervisor, [rabbit_farm_keeper_sup]});
+        true->
+            error_logger:error_msg("create rabbit farm keeper failed, farm:~n~p~n",[RabbitFarmModel])
+    end,
+    ok.
 
 publish_rabbit_carrot(Type, #rabbit_carrot{
-								 farm_name    = FarmName,
-								 exchange     = Exchange,
-								 routing_key  = RoutingKey,
-								 message      = Message,
-								 content_type = ContentType
-							}  = RabbitCarrot)
-				when is_record(RabbitCarrot,rabbit_carrot)->
-	F = publish_fun(Type, Exchange, RoutingKey, Message, ContentType),
-	call_warper(FarmName, F).
+                                 farm_name    = FarmName,
+                                 exchange     = Exchange,
+                                 routing_key  = RoutingKey,
+                                 message      = Message,
+                                 content_type = ContentType
+                            }  = RabbitCarrot)
+                when is_record(RabbitCarrot,rabbit_carrot)->
+    F = publish_fun(Type, Exchange, RoutingKey, Message, ContentType),
+    call_warper(FarmName, F).
 
 publish_rabbit_carrots(Type, #rabbit_carrots{
-								 farm_name            = FarmName,
-								 exchange             = Exchange,
-								 rabbit_carrot_bodies = RabbitCarrotBodies,
-								 content_type = ContentType
-							}  = RabbitCarrots)
-				when is_record(RabbitCarrots,rabbit_carrots)->
-	 
-	FunTuples=
-	[publish_fun(Type, Exchange, RoutingKey, Message, ContentType)
-	||#rabbit_carrot_body{routing_key = RoutingKey, message = Message} <- RabbitCarrotBodies],
-	call_warper(FarmName, FunTuples).
+                                 farm_name            = FarmName,
+                                 exchange             = Exchange,
+                                 rabbit_carrot_bodies = RabbitCarrotBodies,
+                                 content_type = ContentType
+                            }  = RabbitCarrots)
+                when is_record(RabbitCarrots,rabbit_carrots)->
+     
+    FunTuples=
+    [publish_fun(Type, Exchange, RoutingKey, Message, ContentType)
+    ||#rabbit_carrot_body{routing_key = RoutingKey, message = Message} <- RabbitCarrotBodies],
+    call_warper(FarmName, FunTuples).
 
 native_rabbit_call(Type, FarmName, Method, Content)->
-	F = get_fun(Type),
-	call_warper(FarmName, [{F, Method, Content}]).
+    F = get_fun(Type),
+    call_warper(FarmName, [{F, Method, Content}]).
 
 
 get_rabbit_farm(FarmName)->
-	case ets:lookup(?ETS_FARMS, FarmName) of 
-		 [RabbitFarm] when is_record(RabbitFarm,rabbit_farm)->
-		 	RabbitFarm;
-		 _->
-		 	undefined
-	end.
+    case ets:lookup(?ETS_FARMS, FarmName) of 
+         [RabbitFarm] when is_record(RabbitFarm,rabbit_farm)->
+            RabbitFarm;
+         _->
+            undefined
+    end.
 
-call_warper(FarmName, FunTuples) ->			
-	case get_rabbit_farm(FarmName) of 
-		 RabbitFarm when is_record(RabbitFarm,rabbit_farm)->
-		 	#rabbit_farm{connection = Connection, channels = Channels} = RabbitFarm,
-		 	case is_process_alive(Connection) of 
-		 		true->
-				 	ChannelSize  = orddict:size(Channels),
-				 	case ChannelSize > 0 of
-				 		 true->
-	    				 	random:seed(os:timestamp()),
-							ChannelIndex = random:uniform(ChannelSize),
-							Channel      = orddict:fetch(ChannelIndex, Channels),
-							Ret          = [F(Channel, Method, Content)||{F, Method, Content} <-FunTuples],
-							{ok, Ret};
-	    				 false->
-	    				 	error_logger:error_msg("can not find channel from rabbit farm:~p~n",[FarmName])
-	    			end;
-				false->
-					error_logger:error_msg("the farm ~p died~n",[FarmName]),
-					{error, farm_died}
-			end;
-		 undefined->
-		 	error_logger:error_msg("can not find rabbit farm:~p~n",[FarmName]),
-		 	{error, farm_not_exist}
-	end.
+call_warper(FarmName, FunTuples) ->         
+    case get_rabbit_farm(FarmName) of 
+         RabbitFarm when is_record(RabbitFarm,rabbit_farm)->
+            #rabbit_farm{connection = Connection, channels = Channels} = RabbitFarm,
+            case is_process_alive(Connection) of 
+                true->
+                    ChannelSize  = orddict:size(Channels),
+                    case ChannelSize > 0 of
+                         true->
+                            random:seed(os:timestamp()),
+                            ChannelIndex = random:uniform(ChannelSize),
+                            Channel      = orddict:fetch(ChannelIndex, Channels),
+                            Ret          = [F(Channel, Method, Content)||{F, Method, Content} <-FunTuples],
+                            {ok, Ret};
+                         false->
+                            error_logger:error_msg("can not find channel from rabbit farm:~p~n",[FarmName])
+                    end;
+                false->
+                    error_logger:error_msg("the farm ~p died~n",[FarmName]),
+                    {error, farm_died}
+            end;
+         undefined->
+            error_logger:error_msg("can not find rabbit farm:~p~n",[FarmName]),
+            {error, farm_not_exist}
+    end.
 
 publish_fun(Type, Exchange, RoutingKey, Message, ContentType)->
-	{
-		get_fun(Type),
-		%% Method
-		#'basic.publish'{ exchange    = Exchange,
-	    				  routing_key = ensure_binary(RoutingKey)},
-	    %% Content
-	    #amqp_msg{props = #'P_basic'{content_type = ContentType}, payload = ensure_binary(Message)}
-	}.
+    {
+        get_fun(Type),
+        %% Method
+        #'basic.publish'{ exchange    = Exchange,
+                          routing_key = ensure_binary(RoutingKey)},
+        %% Content
+        #amqp_msg{props = #'P_basic'{content_type = ContentType}, payload = ensure_binary(Message)}
+    }.
 
 get_fun(cast)->
-	fun amqp_channel:cast/3;
+    fun amqp_channel:cast/3;
 get_fun(call)->
-	fun amqp_channel:call/3.
+    fun amqp_channel:call/3.
 
 ensure_binary(undefined)->
-	undefined;
+    undefined;
 ensure_binary(Value) when is_binary(Value)->
-	Value;
+    Value;
 ensure_binary(Value) when is_list(Value)->
-	list_to_binary(Value).
+    list_to_binary(Value).
