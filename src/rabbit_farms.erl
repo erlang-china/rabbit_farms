@@ -152,6 +152,7 @@ terminate(_Reason, _State) ->
 init_rabbit_farm(State)->
 	{ok, Farms} = application:get_env(?APP, rabbit_farms),
 	[ begin
+
 		FarmNodeName      = ?TO_FARM_NODE_NAME(FarmName),
 		{ok, FarmOptions} = application:get_env(?APP, FarmNodeName),
 		RabbitFarmModel   = create_rabbit_farm_model(FarmName, FarmOptions),
@@ -206,12 +207,21 @@ create_rabbit_farm_model(FarmName, FarmOptions) when is_list(FarmOptions)->
 
 create_rabbit_farm_instance(RabbitFarmModel)->
 	#rabbit_farm{farm_name = FarmName} = RabbitFarmModel,
+
 	FarmSups   = supervisor:which_children(rabbit_farms_sup),
 	MatchedSup =
 	[{Id, Child, Type, Modules} ||{Id, Child, Type, Modules} <-FarmSups, Id =:= FarmName], 
 	case length(MatchedSup) > 0 of 
 		false->
-			supervisor:start_child(rabbit_farms_sup,{rabbit_farm_keeper_sup, {rabbit_farm_keeper_sup, start_link, [RabbitFarmModel]}, permanent, 5000, supervisor, [rabbit_farm_keeper_sup]});
+			supervisor:start_child(rabbit_farm_keeper_sup,
+                                    {FarmName, {rabbit_farm_keeper, 
+                                                start_link, 
+                                                [RabbitFarmModel]},
+                                    permanent, 
+                                    5000, 
+                                    worker, 
+                                    [eredis_keeper]});
+			%%supervisor:start_child(rabbit_farms_sup,{rabbit_farm_keeper_sup, {rabbit_farm_keeper_sup, start_link, [RabbitFarmModel]}, permanent, 5000, supervisor, [rabbit_farm_keeper_sup]});
 		true->
 			error_logger:error_msg("create rabbit farm keeper failed, farm:~n~p~n",[RabbitFarmModel])
 	end,

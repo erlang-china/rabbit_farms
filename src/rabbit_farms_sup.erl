@@ -39,5 +39,6 @@ start_link() ->
 %% ===================================================================
 
 init([]) ->
-    {ok, { {one_for_one, 5, 10}, [?CHILD(rabbit_farms,worker)]} }.
+    {ok, { {one_for_one, 5, 10}, [?CHILD(rabbit_farm_keeper_sup,supervisor), 
+                                  ?CHILD(rabbit_farms,worker)]} }.
 
