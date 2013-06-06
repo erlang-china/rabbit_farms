@@ -150,16 +150,30 @@ terminate(_Reason, _State) ->
     ok.
 
 init_rabbit_farm(State)->
-	{ok, Farms} = application:get_env(?APP, rabbit_farms),
-	[ begin
+	{ok, ConfigFile} = application:get_env(?APP, config),
+	case load_config(ConfigFile) of 
+		ok ->
+			{ok, State#state{status = initialized}};
+		R->
+			R
+	end.
 
-		FarmNodeName      = ?TO_FARM_NODE_NAME(FarmName),
-		{ok, FarmOptions} = application:get_env(?APP, FarmNodeName),
-		RabbitFarmModel   = create_rabbit_farm_model(FarmName, FarmOptions),
-		create_rabbit_farm_instance(RabbitFarmModel)
-	  end
-	  || FarmName <-Farms],
-	{ok, State#state{status = initialized}}.
+load_config(FileName) ->
+	case file:consult(FileName) of
+		{ok, Term} ->
+			Farms = proplists:get_value(rabbit_farms, Term, []),
+			[ begin
+				RabbitFarmModel = create_rabbit_farm_model(FarmName, FarmOptions),
+				create_rabbit_farm_instance(RabbitFarmModel)
+			  end
+			  || {FarmName, FarmOptions } <-Farms],
+			ok;
+		{error, Reason}->
+			ErrorMsg = [{filename, FileName},
+                        {reason,   Reason}],
+            error_logger:error_msg("load config error:~n~p~n", [ErrorMsg]),
+			{error, Reason}
+	end.
 
 create_rabbit_farm_model(FarmName, FarmOptions) when is_list(FarmOptions)->
 	UserName    = proplists:get_value(username,FarmOptions,<<"guest">>),
@@ -207,7 +221,6 @@ create_rabbit_farm_model(FarmName, FarmOptions) when is_list(FarmOptions)->
 
 create_rabbit_farm_instance(RabbitFarmModel)->
 	#rabbit_farm{farm_name = FarmName} = RabbitFarmModel,
-
 	FarmSups   = supervisor:which_children(rabbit_farms_sup),
 	MatchedSup =
 	[{Id, Child, Type, Modules} ||{Id, Child, Type, Modules} <-FarmSups, Id =:= FarmName], 

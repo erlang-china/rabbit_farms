@@ -8,29 +8,7 @@
                   stdlib
                  ]},
   {mod, { rabbit_farms_app, []}},
-  {env, [{rabbit_farms,[default, notification]},
-  		   {farm_default,[ {username, <<"guest">>},
-            						 {password, <<"V2pOV2JHTXpVVDA9">>},
-            						 {virtual_host, <<"/">>},
-            						 {host, "localhost"},
-            						 {port, 5672},
-                         {feeders,[
-                                    [{channel_count,1},
-                                     {exchange, <<"tracking.logs">>},
-                                     {type, <<"topic">>}]
-                                  ]}
-                         ]},
-          {farm_notification,[ {username, <<"guest">>},
-                               {password, <<"V2pOV2JHTXpVVDA9">>},
-                               {virtual_host, <<"/">>},
-                               {host, "localhost"},
-                               {port, 5672},
-                               {feeders,[
-                                          [{channel_count,1},
-                                          {exchange, <<"app.notification">>},
-                                          {type, <<"topic">>}]
-                                        ]}
-                              ]}
-  		  ]}
+  {env, [{config, "etc/rabbit_farms.config"}]
+  }
  ]
 }.

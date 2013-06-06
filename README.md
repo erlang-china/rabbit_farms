@@ -16,22 +16,38 @@ gen_server call/cast API.
 
 ### Usage:
 -------
-Configure the `rabbit_famrs.app`
+Configure the `rabbit_farms.app`
+
 ```erlang
-    {env, [{rabbit_farms,[tracking]},
-             {farm_tracking,[{username, <<"guest">>},
-                             %% triple_times_base64("guest")
-                             {password, <<"V2pOV2JHTXpVVDA9">>}, 
-                             {virtual_host, <<"/">>},
-                             {host, "localhost"},
-                             {port, 5672},
-                             {feeders,[
-                                      [{channel_count,1},
-                                       {exchange, <<"tracking.log">>},
-                                       {type, <<"topic">>}]
-                                    ]}
-                            ]}
-    ]}
+{env, [{config, "etc/rabbit_farms.config"}]}
+```
+
+Configure the `etc/rabbit_farms.config`
+
+```erlang
+{rabbit_farms, [{default, [ {username, <<"guest">>},
+                            {password, <<"V2pOV2JHTXpVVDA9">>},
+                            {virtual_host, <<"/">>},
+                            {host, "localhost"},
+                            {port, 5672},
+                            {feeders,[
+                                       [{channel_count,1},
+                                        {exchange, <<"tracking.logs">>},
+                                        {type, <<"topic">>}]
+                                     ]}
+                          ]},
+                {notification,[ {username, <<"guest">>},
+                                {password, <<"V2pOV2JHTXpVVDA9">>},
+                                {virtual_host, <<"/">>},
+                                {host, "localhost"},
+                                {port, 5672},
+                                {feeders,[
+                                           [{channel_count,1},
+                                           {exchange, <<"app.notification">>},
+                                           {type, <<"topic">>}]
+                                         ]}
+                              ]}]
+}.
 ```
 
 

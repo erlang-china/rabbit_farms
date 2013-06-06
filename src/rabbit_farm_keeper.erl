@@ -33,11 +33,10 @@
 
 start_link(RabbitFarmModel) ->
 	#rabbit_farm{farm_name = FarmName} = RabbitFarmModel,
-    gen_server2:start_link({local, ?TO_FARM_NODE_NAME(FarmName)}, ?MODULE, [RabbitFarmModel], []).
+    gen_server2:start_link({local, FarmName}, ?MODULE, [RabbitFarmModel], []).
 
 get_status(FarmName) ->
-	FarmNode = ?TO_FARM_NODE_NAME(FarmName),
-    gen_server2:call(FarmNode,{get_status}).
+    gen_server2:call(FarmName,{get_status}).
 
 %% ====================================================================
 %% Behavioural functions 
