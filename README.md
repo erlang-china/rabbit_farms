@@ -1,15 +1,17 @@
 rabbit_farms
 ============
 
-Rabbit farms is a standalone service for publishing messages to RabbitMQ from other another erlang apps.
+Rabbit farms is a standalone service for publishing messages to RabbitMQ 
+from other another erlang apps.
 
 ##### This is a beta version.
 
 ### Usage scenario
 -------
 
-Other (external) erlang applications publish messages to RabbitMQ without needing to reference the amqp_client, 
-using it just like the gen_server call/cast API.
+Other (external) erlang applications publish messages to RabbitMQ 
+without needing to reference the amqp_client, using it just like the 
+gen_server call/cast API.
 
 
 ### Usage:
