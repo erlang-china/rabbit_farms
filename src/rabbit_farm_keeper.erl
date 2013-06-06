@@ -138,7 +138,13 @@ watch_rabbit_farm(Keeper, Connection, RabbitFarm, Fun) when
                     {'EXIT', Connection, Reason} -> 
                         Fun(Keeper, Connection, RabbitFarm, Reason);
                     {'EXIT', Keeper, _Reason} -> 
-                        amqp_connection:close(Connection)
+                        amqp_connection:close(Connection);
+                    Message ->
+                        error_logger:error_msg("Unknown message from rabbit_farm 
+                                                keeper.~n
+                                                rabbitfarm:~n~p~n
+                                                message:~n~p~n",
+                                                [RabbitFarm, Message])
                 end
     end).
 
