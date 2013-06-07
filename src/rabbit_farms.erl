@@ -248,7 +248,7 @@ publish_rabbit_carrot(Type, #rabbit_carrot{
                             }  = RabbitCarrot)
                 when is_record(RabbitCarrot,rabbit_carrot)->
     F = publish_fun(Type, Exchange, RoutingKey, Message, ContentType),
-    call_warper(FarmName, F).
+    call_warper(FarmName, [F]).
 
 publish_rabbit_carrots(Type, #rabbit_carrots{
                                  farm_name            = FarmName,
